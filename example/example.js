@@ -11,6 +11,9 @@ ReactDOM.render(
     dateFormat: 'DD/MM/YYYY',
     timeFormat: false,
     buddishEra: false,
+    isValidDate(current) {
+      return current.isBefore(new Date('2018-06-01'), 'YYYY-MM-DD');
+    }
   }),
   document.getElementById("datetime")
 );

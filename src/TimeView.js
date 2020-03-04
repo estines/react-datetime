@@ -76,8 +76,7 @@ var DateTimePickerTime = createClass({
 
 	render: function () {
 		var me = this,
-			counters = []
-			;
+			counters = [];
 
 		this.state.counters.forEach(function (c) {
 			if (counters.length)

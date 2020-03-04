@@ -3979,7 +3979,7 @@ exports[`test defaultValue: set to arbitrary value 1`] = `
     onFocus={[Function]}
     onKeyDown={[Function]}
     type="text"
-    value="12/22/2016 12:36 AM" />
+    value="12/22/2016 6:36 AM" />
   <div
     className="rdtPicker">
     <div
@@ -4312,7 +4312,7 @@ exports[`test defaultValue: set to arbitrary value 1`] = `
               className="rdtTimeToggle"
               colSpan={7}
               onClick={[Function]}>
-              12:36 AM
+              6:36 AM
             </td>
           </tr>
         </tfoot>
@@ -6072,7 +6072,7 @@ exports[`test value: set to arbitrary value 1`] = `
     onFocus={[Function]}
     onKeyDown={[Function]}
     type="text"
-    value="12/22/2016 12:36 AM" />
+    value="12/22/2016 6:36 AM" />
   <div
     className="rdtPicker">
     <div
@@ -6405,7 +6405,7 @@ exports[`test value: set to arbitrary value 1`] = `
               className="rdtTimeToggle"
               colSpan={7}
               onClick={[Function]}>
-              12:36 AM
+              6:36 AM
             </td>
           </tr>
         </tfoot>
@@ -7741,12 +7741,6 @@ exports[`viewMode set to years 1`] = `
           <tr>
             <td
               className="rdtYear"
-              data-value={2009}
-              onClick={[Function]}>
-              2009
-            </td>
-            <td
-              className="rdtYear"
               data-value={2010}
               onClick={[Function]}>
               2010
@@ -7763,14 +7757,14 @@ exports[`viewMode set to years 1`] = `
               onClick={[Function]}>
               2012
             </td>
-          </tr>
-          <tr>
             <td
               className="rdtYear"
               data-value={2013}
               onClick={[Function]}>
               2013
             </td>
+          </tr>
+          <tr>
             <td
               className="rdtYear"
               data-value={2014}
@@ -7789,14 +7783,14 @@ exports[`viewMode set to years 1`] = `
               onClick={[Function]}>
               2016
             </td>
-          </tr>
-          <tr>
             <td
               className="rdtYear"
               data-value={2017}
               onClick={[Function]}>
               2017
             </td>
+          </tr>
+          <tr>
             <td
               className="rdtYear"
               data-value={2018}
@@ -7808,12 +7802,6 @@ exports[`viewMode set to years 1`] = `
               data-value={2019}
               onClick={[Function]}>
               2019
-            </td>
-            <td
-              className="rdtYear"
-              data-value={2020}
-              onClick={[Function]}>
-              2020
             </td>
           </tr>
         </tbody>
