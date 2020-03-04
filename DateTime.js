@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 'use strict';
 
 var assign = require('object-assign'),
@@ -42,15 +43,16 @@ var Datetime = createClass({
 		open: TYPES.bool,
 		strictParsing: TYPES.bool,
 		closeOnSelect: TYPES.bool,
-		closeOnTab: TYPES.bool
+		closeOnTab: TYPES.bool,
+		buddishEra: TYPES.bool
 	},
 
-	getInitialState: function() {
-		this.checkTZ( this.props );
-		
-		var state = this.getStateFromProps( this.props );
+	getInitialState: function () {
+		this.checkTZ(this.props);
 
-		if ( state.open === undefined )
+		var state = this.getStateFromProps(this.props);
+
+		if (state.open === undefined)
 			state.open = !this.props.input;
 
 		state.currentView = this.props.dateFormat ?
@@ -73,11 +75,10 @@ var Datetime = createClass({
 		return parsedDate;
 	},
 
-	getStateFromProps: function( props ) {
-		var formats = this.getFormats( props ),
+	getStateFromProps: function (props) {
+		var formats = this.getFormats(props),
 			date = props.value || props.defaultValue,
-			selectedDate, viewDate, updateOn, inputValue
-			;
+			selectedDate, viewDate, updateOn, inputValue;
 
 		selectedDate = this.parseDate(date, formats);
 
@@ -89,9 +90,13 @@ var Datetime = createClass({
 
 		updateOn = this.getUpdateOn(formats);
 
-		if ( selectedDate )
+		if (selectedDate) {
 			inputValue = selectedDate.format(formats.datetime);
-		else if ( date.isValid && !date.isValid() )
+			if (this.props.buddishEra) {
+				inputValue = selectedDate.format(formats.datetime.replace(/y/ig, '')) + (parseInt(selectedDate.format('YYYY'), 10) + 543);
+			}
+		}
+		else if (date.isValid && !date.isValid())
 			inputValue = '';
 		else
 			inputValue = date || '';
@@ -106,191 +111,187 @@ var Datetime = createClass({
 		};
 	},
 
-	getUpdateOn: function( formats ) {
-		if ( formats.date.match(/[lLD]/) ) {
+	getUpdateOn: function (formats) {
+		if (formats.date.match(/[lLD]/)) {
 			return viewModes.DAYS;
-		} else if ( formats.date.indexOf('M') !== -1 ) {
+		} else if (formats.date.indexOf('M') !== -1) {
 			return viewModes.MONTHS;
-		} else if ( formats.date.indexOf('Y') !== -1 ) {
+		} else if (formats.date.indexOf('Y') !== -1) {
 			return viewModes.YEARS;
 		}
 
 		return viewModes.DAYS;
 	},
 
-	getFormats: function( props ) {
+	getFormats: function (props) {
 		var formats = {
-				date: props.dateFormat || '',
-				time: props.timeFormat || ''
-			},
-			locale = this.localMoment( props.date, null, props ).localeData()
-			;
+			date: props.dateFormat || '',
+			time: props.timeFormat || ''
+		};
+		var locale = this.localMoment(props.date, null, props).localeData();
 
-		if ( formats.date === true ) {
+		if (formats.date === true) {
 			formats.date = locale.longDateFormat('L');
 		}
-		else if ( this.getUpdateOn(formats) !== viewModes.DAYS ) {
+		else if (this.getUpdateOn(formats) !== viewModes.DAYS) {
 			formats.time = '';
 		}
 
-		if ( formats.time === true ) {
+		if (formats.time === true) {
 			formats.time = locale.longDateFormat('LT');
 		}
 
 		formats.datetime = formats.date && formats.time ?
 			formats.date + ' ' + formats.time :
-			formats.date || formats.time
-		;
+			formats.date || formats.time;
 
 		return formats;
 	},
 
-	componentWillReceiveProps: function( nextProps ) {
-		var formats = this.getFormats( nextProps ),
-			updatedState = {}
-		;
+	componentWillReceiveProps: function (nextProps) {
+		var formats = this.getFormats(nextProps),
+			updatedState = {};
 
-		if ( nextProps.value !== this.props.value ||
-			formats.datetime !== this.getFormats( this.props ).datetime ) {
-			updatedState = this.getStateFromProps( nextProps );
+		if (nextProps.value !== this.props.value ||
+			formats.datetime !== this.getFormats(this.props).datetime) {
+			updatedState = this.getStateFromProps(nextProps);
 		}
 
-		if ( updatedState.open === undefined ) {
-			if ( typeof nextProps.open !== 'undefined' ) {
+		if (updatedState.open === undefined) {
+			if (typeof nextProps.open !== 'undefined') {
 				updatedState.open = nextProps.open;
-			} else if ( this.props.closeOnSelect && this.state.currentView !== viewModes.TIME ) {
+			} else if (this.props.closeOnSelect && this.state.currentView !== viewModes.TIME) {
 				updatedState.open = false;
 			} else {
 				updatedState.open = this.state.open;
 			}
 		}
 
-		if ( nextProps.viewMode !== this.props.viewMode ) {
+		if (nextProps.viewMode !== this.props.viewMode) {
 			updatedState.currentView = nextProps.viewMode;
 		}
 
-		if ( nextProps.locale !== this.props.locale ) {
-			if ( this.state.viewDate ) {
-				var updatedViewDate = this.state.viewDate.clone().locale( nextProps.locale );
+		if (nextProps.locale !== this.props.locale) {
+			if (this.state.viewDate) {
+				var updatedViewDate = this.state.viewDate.clone().locale(nextProps.locale);
 				updatedState.viewDate = updatedViewDate;
 			}
-			if ( this.state.selectedDate ) {
-				var updatedSelectedDate = this.state.selectedDate.clone().locale( nextProps.locale );
+			if (this.state.selectedDate) {
+				var updatedSelectedDate = this.state.selectedDate.clone().locale(nextProps.locale);
 				updatedState.selectedDate = updatedSelectedDate;
-				updatedState.inputValue = updatedSelectedDate.format( formats.datetime );
+				updatedState.inputValue = updatedSelectedDate.format(formats.datetime);
 			}
 		}
 
-		if ( nextProps.utc !== this.props.utc || nextProps.displayTimeZone !== this.props.displayTimeZone ) {
-			if ( nextProps.utc ) {
-				if ( this.state.viewDate )
+		if (nextProps.utc !== this.props.utc || nextProps.displayTimeZone !== this.props.displayTimeZone) {
+			if (nextProps.utc) {
+				if (this.state.viewDate)
 					updatedState.viewDate = this.state.viewDate.clone().utc();
-				if ( this.state.selectedDate ) {
+				if (this.state.selectedDate) {
 					updatedState.selectedDate = this.state.selectedDate.clone().utc();
-					updatedState.inputValue = updatedState.selectedDate.format( formats.datetime );
+					updatedState.inputValue = updatedState.selectedDate.format(formats.datetime);
 				}
-			} else if ( nextProps.displayTimeZone ) {
-				if ( this.state.viewDate )
+			} else if (nextProps.displayTimeZone) {
+				if (this.state.viewDate)
 					updatedState.viewDate = this.state.viewDate.clone().tz(nextProps.displayTimeZone);
-				if ( this.state.selectedDate ) {
+				if (this.state.selectedDate) {
 					updatedState.selectedDate = this.state.selectedDate.clone().tz(nextProps.displayTimeZone);
-					updatedState.inputValue = updatedState.selectedDate.tz(nextProps.displayTimeZone).format( formats.datetime );
+					updatedState.inputValue = updatedState.selectedDate.tz(nextProps.displayTimeZone).format(formats.datetime);
 				}
 			} else {
-				if ( this.state.viewDate )
+				if (this.state.viewDate)
 					updatedState.viewDate = this.state.viewDate.clone().local();
-				if ( this.state.selectedDate ) {
+				if (this.state.selectedDate) {
 					updatedState.selectedDate = this.state.selectedDate.clone().local();
 					updatedState.inputValue = updatedState.selectedDate.format(formats.datetime);
 				}
 			}
 		}
 
-		if ( nextProps.viewDate !== this.props.viewDate ) {
+		if (nextProps.viewDate !== this.props.viewDate) {
 			updatedState.viewDate = moment(nextProps.viewDate);
 		}
 
-		this.checkTZ( nextProps );
+		this.checkTZ(nextProps);
 
-		this.setState( updatedState );
+		this.setState(updatedState);
 	},
 
-	onInputChange: function( e ) {
+	onInputChange: function (e) {
 		var value = e.target === null ? e : e.target.value,
-			localMoment = this.localMoment( value, this.state.inputFormat ),
-			update = { inputValue: value }
-			;
+			localMoment = this.localMoment(value, this.state.inputFormat),
+			update = { inputValue: value };
 
-		if ( localMoment.isValid() && !this.props.value ) {
+		if (localMoment.isValid() && !this.props.value) {
 			update.selectedDate = localMoment;
 			update.viewDate = localMoment.clone().startOf('month');
 		} else {
 			update.selectedDate = null;
 		}
 
-		return this.setState( update, function() {
-			return this.props.onChange( localMoment.isValid() ? localMoment : this.state.inputValue );
+		return this.setState(update, function () {
+			return this.props.onChange(localMoment.isValid() ? localMoment : this.state.inputValue);
 		});
 	},
 
-	onInputKey: function( e ) {
-		if ( e.which === 9 && this.props.closeOnTab ) {
+	onInputKey: function (e) {
+		if (e.which === 9 && this.props.closeOnTab) {
 			this.closeCalendar();
 		}
 	},
 
-	showView: function( view ) {
+	showView: function (view) {
 		var me = this;
-		return function() {
-			me.state.currentView !== view && me.props.onViewModeChange( view );
+		return function () {
+			me.state.currentView !== view && me.props.onViewModeChange(view);
 			me.setState({ currentView: view });
 		};
 	},
 
-	setDate: function( type ) {
+	setDate: function (type) {
 		var me = this,
 			nextViews = {
 				month: viewModes.DAYS,
 				year: viewModes.MONTHS,
-			}
-		;
-		return function( e ) {
+			};
+
+		return function (e) {
 			me.setState({
-				viewDate: me.state.viewDate.clone()[ type ]( parseInt(e.target.getAttribute('data-value'), 10) ).startOf( type ),
-				currentView: nextViews[ type ]
+				viewDate: me.state.viewDate.clone()[type](parseInt(e.target.getAttribute('data-value'), 10)).startOf(type),
+				currentView: nextViews[type]
 			});
-			me.props.onViewModeChange( nextViews[ type ] );
+			me.props.onViewModeChange(nextViews[type]);
 		};
 	},
 
-	subtractTime: function( amount, type, toSelected ) {
+	subtractTime: function (amount, type, toSelected) {
 		var me = this;
-		return function() {
-			me.props.onNavigateBack( amount, type );
-			me.updateTime( 'subtract', amount, type, toSelected );
+		return function () {
+			me.props.onNavigateBack(amount, type);
+			me.updateTime('subtract', amount, type, toSelected);
 		};
 	},
 
-	addTime: function( amount, type, toSelected ) {
+	addTime: function (amount, type, toSelected) {
 		var me = this;
-		return function() {
-			me.props.onNavigateForward( amount, type );
-			me.updateTime( 'add', amount, type, toSelected );
+		return function () {
+			me.props.onNavigateForward(amount, type);
+			me.updateTime('add', amount, type, toSelected);
 		};
 	},
 
-	updateTime: function( op, amount, type, toSelected ) {
+	updateTime: function (op, amount, type, toSelected) {
 		var update = {},
 			date = toSelected ? 'selectedDate' : 'viewDate';
 
-		update[ date ] = this.state[ date ].clone()[ op ]( amount, type );
+		update[date] = this.state[date].clone()[op](amount, type);
 
-		this.setState( update );
+		this.setState(update);
 	},
 
 	allowedSetTime: ['hours', 'minutes', 'seconds', 'milliseconds'],
-	setTime: function( type, value ) {
-		var index = this.allowedSetTime.indexOf( type ) + 1,
+	setTime: function (type, value) {
+		var index = this.allowedSetTime.indexOf(type) + 1,
 			state = this.state,
 			date = (state.selectedDate || state.viewDate).clone(),
 			nextType
@@ -298,22 +299,22 @@ var Datetime = createClass({
 
 		// It is needed to set all the time properties
 		// to not to reset the time
-		date[ type ]( value );
+		date[type](value);
 		for (; index < this.allowedSetTime.length; index++) {
 			nextType = this.allowedSetTime[index];
-			date[ nextType ]( date[nextType]() );
+			date[nextType](date[nextType]());
 		}
 
-		if ( !this.props.value ) {
+		if (!this.props.value) {
 			this.setState({
 				selectedDate: date,
-				inputValue: date.format( state.inputFormat )
+				inputValue: date.format(state.inputFormat)
 			});
 		}
-		this.props.onChange( date );
+		this.props.onChange(date);
 	},
 
-	updateSelectedDate: function( e, close ) {
+	updateSelectedDate: function (e, close) {
 		var target = e.currentTarget,
 			modifier = 0,
 			viewDate = this.state.viewDate,
@@ -328,68 +329,73 @@ var Datetime = createClass({
 				modifier = -1;
 
 			date = viewDate.clone()
-				.month( viewDate.month() + modifier )
-				.date( parseInt( target.getAttribute('data-value'), 10 ) );
+				.month(viewDate.month() + modifier)
+				.date(parseInt(target.getAttribute('data-value'), 10));
 		} else if (target.className.indexOf('rdtMonth') !== -1) {
 			date = viewDate.clone()
-				.month( parseInt( target.getAttribute('data-value'), 10 ) )
-				.date( currentDate.date() );
+				.month(parseInt(target.getAttribute('data-value'), 10))
+				.date(currentDate.date());
 		} else if (target.className.indexOf('rdtYear') !== -1) {
 			date = viewDate.clone()
-				.month( currentDate.month() )
-				.date( currentDate.date() )
-				.year( parseInt( target.getAttribute('data-value'), 10 ) );
+				.month(currentDate.month())
+				.date(currentDate.date())
+				.year(parseInt(target.getAttribute('data-value'), 10));
 		}
 
-		date.hours( currentDate.hours() )
-			.minutes( currentDate.minutes() )
-			.seconds( currentDate.seconds() )
-			.milliseconds( currentDate.milliseconds() );
+		date.hours(currentDate.hours())
+			.minutes(currentDate.minutes())
+			.seconds(currentDate.seconds())
+			.milliseconds(currentDate.milliseconds());
 
-		if ( !this.props.value ) {
-			var open = !( this.props.closeOnSelect && close );
-			if ( !open ) {
-				this.props.onBlur( date );
+		if (!this.props.value) {
+			var open = !(this.props.closeOnSelect && close);
+			if (!open) {
+				this.props.onBlur(date);
+			}
+
+			var displayInputValue = date.format(this.state.inputFormat);
+			if (this.props.buddishEra) {
+				displayInputValue = date.format(this.state.inputFormat.replace(/y/ig, '')) + (parseInt(date.format('YYYY'), 10) + 543);
 			}
 
 			this.setState({
 				selectedDate: date,
 				viewDate: date.clone().startOf('month'),
-				inputValue: date.format( this.state.inputFormat ),
+				inputValue: displayInputValue,
 				open: open
 			});
 		} else {
-			if ( this.props.closeOnSelect && close ) {
+			if (this.props.closeOnSelect && close) {
 				this.closeCalendar();
 			}
 		}
 
-		this.props.onChange( date );
+		this.props.onChange(date);
 	},
 
-	openCalendar: function( e ) {
-		if ( !this.state.open ) {
-			this.setState({ open: true }, function() {
-				this.props.onFocus( e );
+	openCalendar: function (e) {
+		if (!this.state.open) {
+			this.setState({ open: true }, function () {
+				this.props.onFocus(e);
 			});
 		}
 	},
 
-	closeCalendar: function() {
+	closeCalendar: function () {
 		this.setState({ open: false }, function () {
-			this.props.onBlur( this.state.selectedDate || this.state.inputValue );
+			this.props.onBlur(this.state.selectedDate || this.state.inputValue);
 		});
 	},
 
-	handleClickOutside: function() {
-		if ( this.props.input && this.state.open && this.props.open === undefined && !this.props.disableCloseOnClickOutside ) {
-			this.setState({ open: false }, function() {
-				this.props.onBlur( this.state.selectedDate || this.state.inputValue );
+	handleClickOutside: function () {
+		if (this.props.input && this.state.open && this.props.open === undefined && !this.props.disableCloseOnClickOutside) {
+			this.setState({ open: false }, function () {
+				this.props.onBlur(this.state.selectedDate || this.state.inputValue);
 			});
 		}
 	},
 
-	localMoment: function( date, format, props ) {
+	localMoment: function (date, format, props) {
 		props = props || this.props;
 		var m = null;
 
@@ -401,17 +407,17 @@ var Datetime = createClass({
 			m = moment(date, format, props.strictParsing);
 		}
 
-		if ( props.locale )
-			m.locale( props.locale );
+		if (props.locale)
+			m.locale(props.locale);
 		return m;
 	},
 
-	checkTZ: function( props ) {
+	checkTZ: function (props) {
 		var con = console;
 
-		if ( props.displayTimeZone && !this.tzWarning && !moment.tz ) {
+		if (props.displayTimeZone && !this.tzWarning && !moment.tz) {
 			this.tzWarning = true;
-			con && con.error('react-datetime: displayTimeZone prop with value "' + props.displayTimeZone +  '" is used but moment.js timezone is not loaded.');
+			con && con.error('react-datetime: displayTimeZone prop with value "' + props.displayTimeZone + '" is used but moment.js timezone is not loaded.');
 		}
 	},
 
@@ -421,39 +427,39 @@ var Datetime = createClass({
 		fromThis: ['setDate', 'setTime', 'showView', 'addTime', 'subtractTime', 'updateSelectedDate', 'localMoment', 'handleClickOutside']
 	},
 
-	getComponentProps: function() {
+	getComponentProps: function () {
 		var me = this,
-			formats = this.getFormats( this.props ),
-			props = {dateFormat: formats.date, timeFormat: formats.time}
+			formats = this.getFormats(this.props),
+			props = { dateFormat: formats.date, timeFormat: formats.time }
 			;
 
-		this.componentProps.fromProps.forEach( function( name ) {
-			props[ name ] = me.props[ name ];
+		this.componentProps.fromProps.forEach(function (name) {
+			props[name] = me.props[name];
 		});
-		this.componentProps.fromState.forEach( function( name ) {
-			props[ name ] = me.state[ name ];
+		this.componentProps.fromState.forEach(function (name) {
+			props[name] = me.state[name];
 		});
-		this.componentProps.fromThis.forEach( function( name ) {
-			props[ name ] = me[ name ];
+		this.componentProps.fromThis.forEach(function (name) {
+			props[name] = me[name];
 		});
 
 		return props;
 	},
 
-	overrideEvent: function( handler, action ) {
-		if ( !this.overridenEvents ) {
+	overrideEvent: function (handler, action) {
+		if (!this.overridenEvents) {
 			this.overridenEvents = {};
 		}
 
-		if ( !this.overridenEvents[handler] ) {
+		if (!this.overridenEvents[handler]) {
 			var me = this;
-			this.overridenEvents[handler] = function( e ) {
+			this.overridenEvents[handler] = function (e) {
 				var result;
-				if ( me.props.inputProps && me.props.inputProps[handler] ) {
-					result = me.props.inputProps[handler]( e );
+				if (me.props.inputProps && me.props.inputProps[handler]) {
+					result = me.props.inputProps[handler](e);
 				}
-				if ( result !== false ) {
-					action( e );
+				if (result !== false) {
+					action(e);
 				}
 			};
 		}
@@ -461,53 +467,52 @@ var Datetime = createClass({
 		return this.overridenEvents[handler];
 	},
 
-	render: function() {
+	render: function () {
 		// TODO: Make a function or clean up this code,
 		// logic right now is really hard to follow
 		var className = 'rdt' + (this.props.className ?
-									( Array.isArray( this.props.className ) ?
-									' ' + this.props.className.join( ' ' ) : ' ' + this.props.className) : ''),
+			(Array.isArray(this.props.className) ?
+				' ' + this.props.className.join(' ') : ' ' + this.props.className) : ''),
 			children = [];
 
-		if ( this.props.input ) {
-			var finalInputProps = assign(
-				{ type: 'text', className: 'form-control', value: this.state.inputValue },
+		if (this.props.input) {
+			var finalInputProps = assign({ type: 'text', className: 'form-control', value: this.state.inputValue },
 				this.props.inputProps,
 				{
-					onClick: this.overrideEvent( 'onClick', this.openCalendar ),
-					onFocus: this.overrideEvent( 'onFocus', this.openCalendar ),
-					onChange: this.overrideEvent( 'onChange', this.onInputChange ),
-					onKeyDown: this.overrideEvent( 'onKeyDown', this.onInputKey ),
+					onClick: this.overrideEvent('onClick', this.openCalendar),
+					onFocus: this.overrideEvent('onFocus', this.openCalendar),
+					onChange: this.overrideEvent('onChange', this.onInputChange),
+					onKeyDown: this.overrideEvent('onKeyDown', this.onInputKey),
 				}
 			);
 
-			if ( this.props.renderInput ) {
-				children = [ React.createElement('div', { key: 'i' }, this.props.renderInput( finalInputProps, this.openCalendar, this.closeCalendar )) ];
+			if (this.props.renderInput) {
+				children = [React.createElement('div', { key: 'i' }, this.props.renderInput(finalInputProps, this.openCalendar, this.closeCalendar))];
 			} else {
-				children = [ React.createElement('input', assign({ key: 'i' }, finalInputProps ))];
+				children = [React.createElement('input', assign({ key: 'i' }, finalInputProps))];
 			}
 		} else {
 			className += ' rdtStatic';
 		}
 
-		if ( this.props.open || (this.props.open === undefined && this.state.open ) )
+		if (this.props.open || (this.props.open === undefined && this.state.open))
 			className += ' rdtOpen';
 
-		return React.createElement( ClickableWrapper, {className: className, onClickOut: this.handleClickOutside}, children.concat(
-			React.createElement( 'div',
+		return React.createElement(ClickableWrapper, { className: className, onClickOut: this.handleClickOutside }, children.concat(
+			React.createElement('div',
 				{ key: 'dt', className: 'rdtPicker' },
-				React.createElement( CalendarContainer, { view: this.state.currentView, viewProps: this.getComponentProps() })
+				React.createElement(CalendarContainer, { view: this.state.currentView, viewProps: this.getComponentProps(), buddishEra: this.props.buddishEra })
 			)
 		));
 	}
 });
 
-var ClickableWrapper = onClickOutside( createClass({
-	render: function() {
-		return React.createElement( 'div', { className: this.props.className }, this.props.children );
+var ClickableWrapper = onClickOutside(createClass({
+	render: function () {
+		return React.createElement('div', { className: this.props.className }, this.props.children);
 	},
-	handleClickOutside: function( e ) {
-		this.props.onClickOut( e );
+	handleClickOutside: function (e) {
+		this.props.onClickOut(e);
 	}
 }));
 
@@ -516,19 +521,20 @@ Datetime.defaultProps = {
 	defaultValue: '',
 	inputProps: {},
 	input: true,
-	onFocus: function() {},
-	onBlur: function() {},
-	onChange: function() {},
-	onViewModeChange: function() {},
-	onNavigateBack: function() {},
-	onNavigateForward: function() {},
+	onFocus: function () { },
+	onBlur: function () { },
+	onChange: function () { },
+	onViewModeChange: function () { },
+	onNavigateBack: function () { },
+	onNavigateForward: function () { },
 	timeFormat: true,
 	timeConstraints: {},
 	dateFormat: true,
 	strictParsing: true,
 	closeOnSelect: false,
 	closeOnTab: true,
-	utc: false
+	utc: false,
+	buddishEra: false,
 };
 
 // Make moment accessible through the Datetime class

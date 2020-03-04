@@ -1,24 +1,27 @@
 'use strict';
 
 var React = require('react'),
-	createClass = require('create-react-class')
-;
+	createClass = require('create-react-class');
 
 var DateTimePickerYears = createClass({
-	render: function() {
-		var year = parseInt( this.props.viewDate.year() / 10, 10 ) * 10;
+	render: function () {
+		var year = parseInt(this.props.viewDate.year() / 10, 10) * 10;
+		var diffYear = parseInt((year + 543).toString().split('').pop(), 10);
+		var buddishEraYear = year - diffYear;
+		var displayYear = this.props.buddishEra ? buddishEraYear + 543 : year;
+		var initializeYear = this.props.buddishEra ? year - diffYear : year;
 
 		return React.createElement('div', { className: 'rdtYears' }, [
 			React.createElement('table', { key: 'a' }, React.createElement('thead', {}, React.createElement('tr', {}, [
-				React.createElement('th', { key: 'prev', className: 'rdtPrev', onClick: this.props.subtractTime( 10, 'years' )}, React.createElement('span', {}, '‹' )),
-				React.createElement('th', { key: 'year', className: 'rdtSwitch', onClick: this.props.showView( 'years' ), colSpan: 2 }, year + '-' + ( year + 9 ) ),
-				React.createElement('th', { key: 'next', className: 'rdtNext', onClick: this.props.addTime( 10, 'years' )}, React.createElement('span', {}, '›' ))
+				React.createElement('th', { key: 'prev', className: 'rdtPrev', onClick: this.props.subtractTime(10, 'years') }, React.createElement('span', {}, '‹')),
+				React.createElement('th', { key: 'year', className: 'rdtSwitch', onClick: this.props.showView('years'), colSpan: 2 }, displayYear + '-' + (displayYear + 9)),
+				React.createElement('th', { key: 'next', className: 'rdtNext', onClick: this.props.addTime(10, 'years') }, React.createElement('span', {}, '›'))
 			]))),
-			React.createElement('table', { key: 'years' }, React.createElement('tbody',  {}, this.renderYears( year )))
+			React.createElement('table', { key: 'years' }, React.createElement('tbody', {}, this.renderYears(initializeYear)))
 		]);
 	},
 
-	renderYears: function( year ) {
+	renderYears: function (year) {
 		var years = [],
 			i = -1,
 			rows = [],
@@ -32,32 +35,32 @@ var DateTimePickerYears = createClass({
 			irrelevantDate = 1
 			;
 
-		year--;
-		while (i < 11) {
+		// 	year--;
+		while (i < 9) {
 			classes = 'rdtYear';
 			currentYear = this.props.viewDate.clone().set(
-				{ year: year, month: irrelevantMonth, date: irrelevantDate } );
+				{ year: year, month: irrelevantMonth, date: irrelevantDate });
 
 			// Not sure what 'rdtOld' is for, commenting out for now as it's not working properly
 			// if ( i === -1 | i === 10 )
-				// classes += ' rdtOld';
+			// classes += ' rdtOld';
 
-			noOfDaysInYear = currentYear.endOf( 'year' ).format( 'DDD' );
-			daysInYear = Array.from({ length: noOfDaysInYear }, function( e, i ) {
+			noOfDaysInYear = currentYear.endOf('year').format('DDD');
+			daysInYear = Array.from({ length: noOfDaysInYear }, function (e, i) {
 				return i + 1;
 			});
 
-			validDay = daysInYear.find(function( d ) {
-				var day = currentYear.clone().dayOfYear( d );
-				return isValid( day );
+			validDay = daysInYear.find(function (d) {
+				var day = currentYear.clone().dayOfYear(d);
+				return isValid(day);
 			});
 
-			isDisabled = ( validDay === undefined );
+			isDisabled = (validDay === undefined);
 
-			if ( isDisabled )
+			if (isDisabled)
 				classes += ' rdtDisabled';
 
-			if ( selectedDate && selectedDate.year() === year )
+			if (selectedDate && selectedDate.year() === year)
 				classes += ' rdtActive';
 
 			props = {
@@ -66,14 +69,14 @@ var DateTimePickerYears = createClass({
 				className: classes
 			};
 
-			if ( !isDisabled )
-				props.onClick = ( this.props.updateOn === 'years' ?
-					this.updateSelectedYear : this.props.setDate('year') );
+			if (!isDisabled)
+				props.onClick = (this.props.updateOn === 'years' ?
+					this.updateSelectedYear : this.props.setDate('year'));
 
-			years.push( renderer( props, year, selectedDate && selectedDate.clone() ));
+			years.push(renderer(props, year, selectedDate && selectedDate.clone()));
 
-			if ( years.length === 4 ) {
-				rows.push( React.createElement('tr', { key: i }, years ) );
+			if (years.length === 4 || i === 8) {
+				rows.push(React.createElement('tr', { key: i }, years));
 				years = [];
 			}
 
@@ -84,15 +87,16 @@ var DateTimePickerYears = createClass({
 		return rows;
 	},
 
-	updateSelectedYear: function( event ) {
-		this.props.updateSelectedDate( event );
+	updateSelectedYear: function (event) {
+		this.props.updateSelectedDate(event);
 	},
 
-	renderYear: function( props, year ) {
-		return React.createElement('td',  props, year );
+	renderYear: function (props, year) {
+		var displayYear = this.props.buddishEra ? parseInt(year, 10) + 543 : year;
+		return React.createElement('td', props, displayYear);
 	},
 
-	alwaysValidDate: function() {
+	alwaysValidDate: function () {
 		return 1;
 	},
 });

@@ -16,8 +16,9 @@ var CalendarContainer = createClass({
 		time: TimeView
 	},
 
-	render: function() {
-		return React.createElement( this.viewComponents[ this.props.view ], this.props.viewProps );
+	render: function () {
+		var propsWrapper = Object.assign({}, this.props.viewProps, { buddishEra: this.props.buddishEra });
+		return React.createElement(this.viewComponents[this.props.view], propsWrapper);
 	}
 });
 
