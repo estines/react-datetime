@@ -224,6 +224,10 @@ var Datetime = createClass({
 
 		if (localMoment.isValid() && !this.props.value) {
 			update.selectedDate = localMoment;
+
+			if (this.props.buddishEra)
+				update.selectedDate = localMoment.subtract('years', 543);
+
 			update.viewDate = localMoment.clone().startOf('month');
 		} else {
 			update.selectedDate = null;
@@ -294,8 +298,7 @@ var Datetime = createClass({
 		var index = this.allowedSetTime.indexOf(type) + 1,
 			state = this.state,
 			date = (state.selectedDate || state.viewDate).clone(),
-			nextType
-			;
+			nextType;
 
 		// It is needed to set all the time properties
 		// to not to reset the time
@@ -311,6 +314,7 @@ var Datetime = createClass({
 				inputValue: date.format(state.inputFormat)
 			});
 		}
+
 		this.props.onChange(date);
 	},
 
@@ -319,8 +323,7 @@ var Datetime = createClass({
 			modifier = 0,
 			viewDate = this.state.viewDate,
 			currentDate = this.state.selectedDate || viewDate,
-			date
-			;
+			date;
 
 		if (target.className.indexOf('rdtDay') !== -1) {
 			if (target.className.indexOf('rdtNew') !== -1)
