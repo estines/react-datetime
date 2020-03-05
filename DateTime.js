@@ -222,6 +222,13 @@ var Datetime = createClass({
 			localMoment = this.localMoment(value, this.state.inputFormat),
 			update = { inputValue: value };
 
+		if (this.props.buddishEra && value.length >= 10) {
+			var splitedDate = value.split('/');
+			var subtractYear = parseInt(splitedDate.pop(), 10) - 543;
+			var subtractedDate = splitedDate.join('/') + '/' + subtractYear.toString();
+			localMoment = this.localMoment(subtractedDate, this.state.inputFormat);
+		}
+
 		if (localMoment.isValid() && !this.props.value) {
 			update.selectedDate = localMoment;
 
