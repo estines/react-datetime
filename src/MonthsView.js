@@ -85,7 +85,7 @@ var DateTimePickerMonths = createClass({
 	renderMonth: function (props, month) {
 		var localMoment = this.props.viewDate;
 		var monthStr = localMoment.localeData().monthsShort(localMoment.month(month));
-		var strLength = 3;
+		var strLength = 5;
 		// Because some months are up to 5 characters long, we want to
 		// use a fixed string length for consistency
 		var monthStrFixedLength = monthStr.substring(0, strLength);
